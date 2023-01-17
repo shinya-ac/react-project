@@ -1,11 +1,8 @@
-import { StrictMode } from "react";
+import React from "react";
 import ReactDom from "react-dom";
+import App from "./App.jsx";
+//同階層のApp.jsxをインポートした→App.jsxのAppコンポーネントの処理をこのファイルで
+//利用できるようになった
 
-import App from "./App";
-
-ReactDom.render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-  document.getElementById("root")
-);
+//App.jsxをインポートしたので以下でAppを使えるようになっている
+ReactDom.render(<App />, document.getElementById("root"));
