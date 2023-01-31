@@ -1,64 +1,74 @@
 import React, { useState, useEffect } from "react";
+import "./style.css";
+import { InputTodo } from "./components/InputTodo.jsx";
+import { IncompleteTodos } from "./components/IncompleteTodos";
+import { CompleteTodos } from "./components/CompleteTodos";
+
 //このファイル名は「App.jsx」となっている。jsでも問題なく動作するけど
 //Reactのコンポーネントというのを明示的にするためにも
 //hoge.jsxと言うファイル名にすることが一般的
-import ColorfulMessage from "./components/ColorfulMessage";
 
-const App = () => {
-  //[stateの変数名, stateを更新する関数名]の順番で分割代入してuseStateを使う
-  const [num, setNum] = useState(1);
-  const [faceState, faceChange] = useState(true);
-  const onClickCountUp = () => {
-    //useStateの関数名を「setNum」としたので例えばsetNum(10000)とするとnumの値が動的に
-    //10000に切り替わる
-    setNum(num + 1);
-  };
-  const onClickFaceChange = () => {
-    faceChange(!faceState);
-  };
-  //以下のuseEffectにより、再レンダリングの制御を行える
-  //以下ではuseEffeectの第二引数の配列に[num]を入れているので
-  //numというstateの状態が更新された時だけこのuseEfect内のメソッドが実行される
-  //つまりfaceStatusの更新が行われてもこのuseEffect内の関数は実行されないので
-  //状態の更新をトリガーにした関数の発動を干渉させ合わせずに行うことができるというのが
-  //このuseEffectのメリット
-  useEffect(() => {
-    //以下のif文をuseEffect内に入れて、そのuseEffectの第二引数の配列に
-    //[num]を指定したことにより、numの値が変更された時だけこのif文の処理が走り、
-    //faceStateの値の更新から分離できるので処理が干渉し合わず、いい感じにうまくいく
-    if (num % 3 === 0) {
-      //numの値が変化した時に再レンダリングが行われる
-      //再レンダリングされるとReactがこのコードをまた上から順に下向きに読み込み、そして画面がレンダリングされる
-      //もしfaceChangeだけをいじるとnum%3が0になりtrueになったときに再レンダリングが行われる
-      //するとReactはまたこのコードを上から下に順に読み込み、
-      //再びこのif分を読み込むことになる
-      //するとnumの値は変わっていないのでこのif文の条件分岐はまたtrueになり、
-      //するとまた再レンダリングが行われ…という無限ループになる
-      //（「Uncaught Error: Too many re-renders. React limits the number of」というエラーが出る）
-      //なので「faceState || faceChange(true);」という感じで、faceStateの値が「trueの時だけ」
-      //このif文の中の処理を実行するという形にすることで無限ループを解決できる
-      //「A || B」とするとAがtrueの時は、Bを作動させると言う意味になる
-      faceState || faceChange(true);
-    } else {
-      faceState && faceChange(false);
-    }
-  }, [num]);
+export const App = () => {
+  const [todoText, setTodoText] = useState("aaaaaaa");
+  const [incompleteTodos, setIncompleteTodos] = useState(["aiaiai", "iaiaia"]);
+  const [completeTodos, setCompleteTodos] = useState(["hoge", "fuga"]);
 
-  //以下のpタグの中の{}の中はjsのコードとみなされる
-  //→contentStyleはjsのコードとみなされ、colorとfontsizeが指定されていると認識される
+  const onClickAdd = () => {
+    if (todoText === "") return;
+    //const newTodos = incompleteTodos.push(todoText)
+    const newTodos = [...incompleteTodos, todoText];
+    setIncompleteTodos(newTodos);
+    setTodoText("");
+  };
+  const onChangeText = (event) => {
+    setTodoText(event.target.value);
+  };
+  const onClickRemove = (index) => {
+    //incompleteTodosの配列のi番目の要素を消す
+    //iとは、li要素の中のi番目のiと一致する
+    //まずはli要素のi番目という識別IDをIDを認識する必要がある
+    //次にincompleteTodos[i].Remove()的な感じでそのi番目の要素を削除する動作を入れる
+    //li要素に配列をmap展開している箇所を「incompleteTodos.map((todo, index) => {...}」
+    //上記のように変更した→mapの配列の順番がそのまま識別子(index)になるので、このindexを受け取れればOK
+    //なのでonClickRemoveに「index」というパラメーターをもらった
+    const newTodos = [...incompleteTodos];
+    newTodos.splice(index, 1); //indexが3なら「3番目の要素を一個削除する」という意味になる
+    setIncompleteTodos(newTodos);
+  };
+  const onCkickCangeStatus = (index) => {
+    const newTodos = [...completeTodos, incompleteTodos[index]];
+    setCompleteTodos(newTodos);
+
+    const newIncompleteTodos = [...incompleteTodos];
+    newIncompleteTodos.splice(index, 1); //indexが3なら「3番目の要素を一個削除する」という意味になる
+    setIncompleteTodos(newIncompleteTodos);
+  };
+  const onClickRedo = (index) => {
+    const newIncompleteTodos = [...incompleteTodos, completeTodos[index]];
+
+    const newCompleteTodos = [...completeTodos];
+    newCompleteTodos.splice(index, 1);
+    setIncompleteTodos(newIncompleteTodos);
+    setCompleteTodos(newCompleteTodos);
+  };
   return (
+    //以下、mapを使用してuseState配列を順にレンダリングするときは
+    //keyを指定する必要がある
     <>
-      <h1>Hi！</h1>
-      <ColorfulMessage color="blue" message="You r Fine？" />
-      <ColorfulMessage color="pink" message="Fine!" />
-      <ColorfulMessage color="brown">me too!</ColorfulMessage>
-      <button onClick={onClickCountUp}>カウントアップ</button>
-      <button onClick={onClickFaceChange}>顔変更</button>
-      <p>{num}</p>
-      {faceState && <p>٩( ᐛ )و</p>}
+      <InputTodo
+        todoText={todoText}
+        onChangeText={onChangeText}
+        onClickAdd={onClickAdd}
+        disabled={incompleteTodos.length >= 5}
+      />
+      {incompleteTodos.length >= 5 && <p>タスクの上限は五個までです</p>}
+
+      <IncompleteTodos
+        incompleteTodos={incompleteTodos}
+        onCkickCangeStatus={onCkickCangeStatus}
+        onClickRemove={onClickRemove}
+      />
+      <CompleteTodos completeTodos={completeTodos} onClickRedo={onClickRedo} />
     </>
   );
 };
-
-//const AppとしたのでAppをエクスポートできるようにする
-export default App;

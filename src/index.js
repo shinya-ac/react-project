@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDom from "react-dom";
-import App from "./App.jsx";
+import {App} from "./App.jsx";
 //同階層のApp.jsxをインポートした→App.jsxのAppコンポーネントの処理をこのファイルで
 //利用できるようになった
 
